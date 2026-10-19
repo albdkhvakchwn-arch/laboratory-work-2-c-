@@ -38,6 +38,8 @@ internal static class Program
                 return;
             }
 
+            RandomizePlayerValues(inputLines, boardSize);
+
             Game game = new Game(boardSize);
             game.Run(inputLines);
 
@@ -45,12 +47,50 @@ internal static class Program
             string outputPath = Path.Combine(inputDirectory, "PursuitLog.txt");
             game.WriteReport(outputPath);
 
-            Console.WriteLine("Обработка завершена.");
-            Console.WriteLine("Результат сохранён в файл: " + outputPath);
+            foreach (string reportLine in File.ReadAllLines(outputPath))
+            {
+                Console.WriteLine(reportLine);
+            }
         }
         catch (Exception ex)
         {
             Console.WriteLine("Ошибка при обработке файла: " + ex.Message);
         }
     }
+
+    private static void RandomizePlayerValues(string[] inputLines, int boardSize)
+    {
+        bool mouseHasPosition = false;
+        bool catHasPosition = false;
+
+        for (int i = 1; i < inputLines.Length; i++)
+        {
+            string line = inputLines[i].Trim();
+            if (line.Length == 0)
+            {
+                continue;
+            }
+
+            string[] parts = line.Split(new[] { ' ', '\t' }, StringSplitOptions.RemoveEmptyEntries);
+            string command = parts[0].ToUpperInvariant();
+
+            if (command == "M")
+            {
+                int value = mouseHasPosition
+                    ? Random.Shared.Next(-boardSize, boardSize + 1)
+                    : Random.Shared.Next(1, boardSize + 1);
+                inputLines[i] = "M " + value;
+                mouseHasPosition = true;
+            }
+            else if (command == "C")
+            {
+                int value = catHasPosition
+                    ? Random.Shared.Next(-boardSize, boardSize + 1)
+                    : Random.Shared.Next(1, boardSize + 1);
+                inputLines[i] = "C " + value;
+                catHasPosition = true;
+            }
+        }
+    }
 }
+
